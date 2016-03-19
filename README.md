@@ -1,2 +1,2 @@
 # picaNode
-A Node.js App using koa.js
+A Node.js App Using Koa.js
