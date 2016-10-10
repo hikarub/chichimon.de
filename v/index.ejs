@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+    <script src="//cdn.bootcss.com/vue/1.0.26/vue.min.js"></script>
+    <script src="http://cdn.bootcss.com/zepto/1.1.6/zepto.min.js"></script>
+    <script src="http://cdn.bootcss.com/socket.io/1.4.8/socket.io.min.js"></script>
+</head>
+<body>
+
+<div id="head"><a id="menu1" class="{{menu.lc}}" v-show="{{menu.lb}}">{{s}}</a></div>
+
+<div id="p1" v-show="show">page1</div>
+
+<div id="p2" v-show="show">
+    <div v-for="t in tango" class="t0">
+        <div class="t1">
+            <div class="t2">{{t.kanji}}</div>
+            <div class="t3">{{t.kana}}</div>
+            <div class="t4">
+                <div class="t5">{{t.accent}}</div>
+                <div class="t6">{{t.hinshi}}</div>
+            </div>
+        </div>
+        <br/>
+        <div class="t7">{{t.kaishaku}}</div>
+        <div class="t8">{{t.rei}}</div>
+    </div>
+</div>
+
+<div id="p3" v-show="show">
+    <a>{{s[0]}}</a>
+    <div class="t0 form" v-show="sss[0]">
+        <div class="t1">
+            <input class="t2" type="text" id="{{input[1].i}}" placeholder="{{input[1].p}}" @keyup.enter="pp(inputd)"/>
+            <input class="t3" type="text" id="{{input[0].i}}" placeholder="{{input[0].p}}" @keyup.enter="pp(inputd)"/>
+            <div class="t4">
+                <input class="t5" type="number" id="{{input[2].i}}" placeholder="{{input[2].p}}" @keyup.enter="pp(inputd)"/>
+                <input class="t6" type="text" id="{{input[3].i}}" placeholder="{{input[3].p}}" @keyup.enter="pp(inputd)"/>
+            </div>
+        </div>
+        <input class="t7"type="text" id="{{input[4].i}}" placeholder="{{input[4].p}}" @keyup.enter="pp(inputd)"/>
+        <input class="t8"type="text" id="{{input[5].i}}" placeholder="{{input[5].p}}" @keyup.enter="pp(inputd)"/>
+        <div><button class="button" @click="pp(inputd)">GO</button></div>
+    </div>
+    <div id="result"></div>
+</div>
+
+<div id="p4" v-show="show">
+    <div class="p4box" v-for="g in gg">
+        <div class="lf"><a href="{{g.twitter}}"><img class="src" src="{{g.ico}}"/></a></div>
+        <div class="rt">
+            <div>{{g.title}}</div>
+            <div class="rts"><img src="{{g.photo}}" alt="photo"/></div>
+            <div class="box-bottom pb"><i class="fa fa-heart-o"></i>&nbsp;{{s}}</div>
+        </div>
+    </div>
+</div>
+
+<div id="p5" v-show="show">page5</div>
+
+<table id="foot">
+    <tr><td  v-for="i in menu" id="{{i.id}}"><i class="{{i.c}}"></i></td></tr>
+</table>
+
+<script>
+    var head = new Vue({
+        el: '#head',
+        data: {
+            s: '',
+            menu: {lb:1,lc:'fa fa-plus'}
+        }
+    });
+
+    var p1 = new Vue({
+        el: '#p1',
+        data: {
+            show:0,
+            t: []
+        }
+    });
+
+    var p2 = new Vue({
+        el: '#p2',
+        data: {
+            show : 0,
+            tango:[]
+        },
+        methods:{},
+        created: function(){
+            $.get('/all', function(dda){
+                    p2.tango= dda[0].tg;
+                    p3.lg(JSON.stringify(p2.tango[0]));
+                }
+            );
+        }
+    });
+
+    var p3 = new Vue({
+        el: '#p3',
+        data: {
+            show: 1,
+            s:['登 録','MENU2'],
+            sss:[1,0,0,0],
+            ///please sync data of input and inputd
+            input: [
+ //                   {i:'tango', p:'単語',c:''},
+                    {i:'kana', p:'ひらがな',c:''},
+                    {i:'kanji', p:'漢字',c:''},
+                    {i:'accent', p:'アクセント',c:''},
+                    {i:'hinshi', p:'品詞',c:''},
+                    {i:'kaishaku', p:'解釈',c:''},
+                    {i:'rei', p:'例',c:''}
+            ],
+            inputd: ['kana','kanji','accent','hinshi','kaishaku','rei','/fc']
+        },
+        methods:{
+            ///is every element is true
+            everyTrue: function(element,index,array){return (element >= 1)},
+            ///post data to server by p3.po()
+            pp: function(d){
+                //e.preventDefault();
+                var data = [];
+                var ke = [];
+                var tof = [];   ///true or false of every element
+                var input0 = {};
+                for (var i = 0; i < d.length - 1; i++){
+                    data[i] = $('#'+d[i]).val();
+                    ke[i] = 'a' + i;
+                }
+                for (var j = 0; j < d.length - 1; j++) {
+                    input0[ke[j]] = data[j];
+                    if (data[j] != '' && data[j] != null) {
+                        tof[j] = 1
+                    }
+                    else {
+                        tof[j] = 0
+                    }
+                }
+                if(tof.every(this.everyTrue)) {
+                    this.po(d[d.length-1], input0);
+                    for (var k= 0; k < d.length - 1; k++){
+                        $('#' + d[k]).val('');
+                    }
+                }else {
+                    $('#result').html('[ERROR] INPUTS NOT COMPLETED!!!');
+                }
+            },
+            ///ajax post
+            po :function (url,data) {
+                $.post(url, data,
+                        function (dat) {
+                        console.log(dat);
+                        $('#result').html('SUCCESS POST'+dat);
+                        }
+                );
+            },
+            lg :function(l){console.log(l)}
+        }
+    });
+
+    var p4 = new Vue({
+        el: '#p4',
+        data: {
+            show: 0,
+            s:'',
+            gg: []
+        },
+        methods: {
+            reformPhoto :  function(winrate,wid,el,rate) {
+                var w = $(window).width() * winrate; ///0.95
+                var r = rate || 1;
+                if (w <= wid) {     ///wid: 600
+                    $(window).on('resize', function () {
+                        $(el).height(w * r);  ///el: '.sqr'
+                    }).resize();
+                } else {
+                    $(window).on('resize', function () {
+                        $(el).height(wid * r).width(wid);
+                    }).resize();
+                }
+            }
+        },
+        created: function(){
+            this.reformPhoto(0.95, 600, 'sqr');
+            this.reformPhoto(0.12, 72, '.lf');
+            this.reformPhoto(0.7125,428, '.rts', 0.45);
+            $.get('/girl', function(dd){p4.gg= dd;});
+        }
+    });
+
+    var p5 = new Vue({
+        el: '#p5',
+        data:{
+            show: 0
+        }
+    });
+
+    var foot = new Vue({
+        el: '#foot',
+        data: {
+            menu:[
+                {id:'foot1',c:'fa fa-trophy'},
+                {id:'foot2',c:'fa fa-tags'},
+                {id:'foot3',c:'fa fa-plus'},
+                {id:'foot4',c:'fa fa-comments'},
+                {id:'foot5',c:'fa fa-search'}
+            ]
+        }
+    });
+    ///socket.io connect to server
+//    var socket = io.connect('127.0.0.1:1235');
+//    socket.on('girls',function(g){
+//        p4.gg = g;});
+
+    //button control
+    var chan = function(a,b,c,d,e,f,g){
+        p1.show = a;
+        p2.show = b;
+        p3.show = c;
+        p4.show = d;
+        p5.show = e;
+        head.s = ss[f];
+        head.menu.lc = 'fa '+ ' fa-'+ g;
+    };
+
+    var btnOn = function(a){
+        var ind = [0,1,2,3,4,5];
+        for (i=1 ;i<=5 ;i++){
+            if(ind[i] == a){
+                // $('#foot'+a).css('background-color','#282828');
+                $('#foot'+a).children('i').css({'color':'white','font-size':'3.5em'});
+            }else {
+                // $('#foot'+ind[i]).css('background-color','#444');
+                $('#foot' + ind[i]).children('i').css({'color': '#eee', 'font-size': '2.5em'});
+            }
+        }
+    };
+    var btnClick = function(a,b,c,d,e,f,g){
+        $('#foot'+f).click(function() {
+            btnOn(f);
+            chan(a,b,c,d,e,f,g);
+        })
+    };
+
+    btnClick(1,0,0,0,0,1,'trophy');
+    btnClick(0,1,0,0,0,2,'tags');
+    btnClick(0,0,1,0,0,3,'plus');
+    btnClick(0,0,0,1,0,4,'creative-commons');
+    btnClick(0,0,0,0,1,5,'search');
+
+    //string language
+    var ss = ['','テスト', '単語', 'エディタ', 'ＣＣサークル', '検索'];
+    head.s = ss[3];
+    p4.s = 'コメント';
+    p3.s = ['登 録','MENU2'];
+//'MS PGothic',Arial,
+</script>
+
+<style>
+    a{
+        text-decoration: none;
+        color: dimgray;
+    }
+    body{
+        font-family:FontAsesome,'MS PGothic','Microsoft Yahei',sans-serif;
+        font-size: 12px;
+        background-color: #fbfbfb;
+        margin: 0;
+    }
+    img{width: 100%}
+    input{
+        font-family: FontAsesome,'MS PGothic','Microsoft Yahei', sans-serif;
+        display: block;
+        width: 100%;
+    }
+    input[type=text]:focus{
+    }
+    table, tr, td{
+        border-collapse: collapse;
+
+    }
+    .box-bottom{
+        height: 1.5em;
+        padding-top: .8em;
+    }
+    .button {
+        border: 2px #8da3c4 solid;
+        color: #8da3c4;
+        background-color: inherit;
+        cursor: pointer;
+        height: 1.2em;
+        font-size: 2em;
+        font-weight: bolder;
+        letter-spacing: 0.05em;
+        text-align: center;
+        transition: border 0.4s ease-in-out;
+        width: 90%;
+        border-radius: 1em;
+        margin: .5em auto;
+    }
+
+    .button:hover {
+        border: 2px #faaca8 solid;
+        color: #faaca8;
+    }
+    .form input {
+        background-color: inherit;
+
+        border: dotted #888 1px;
+        color: #666;
+        text-align: center;
+    }
+
+    .form input:focus {}
+
+    .lf{
+        width: 12%;
+        margin: 2%;
+        overflow: hidden;
+        float: left;
+        border-radius: .8em;
+    }
+    .p4box{
+        width: 100%;
+        margin: 1em auto 2em
+    }
+    .rt{width: 78%;
+        margin: 1.5%;
+        height: auto;
+        background-color: #fff;
+        padding: .1em;
+        border: 2px #f0f0f0 solid;
+        border-radius: .8em;
+        float: left;
+    }
+    .rts{
+        width: 95%;
+        height: auto;
+        margin: auto;
+        overflow: hidden;
+        border-radius: .6em;
+    }
+    .r{
+        float: right;
+        padding-top: .2em;
+    }
+    .sqr {
+        width: 100%;
+        height: auto;
+        margin: auto;
+        overflow: hidden;
+    }
+    .sqr img {
+        width: 100%;
+    }
+    .t0{
+        width: 96%;
+        height: auto;
+        margin: 1em auto;
+        padding: .5em;
+        background-color: #fff;
+        text-align: center;
+        border-radius: .5em;
+        border: solid #d3def1 1px;
+    }
+    .t1{
+        border-bottom: dotted #d8e4f6 1px;
+        height: 5em;
+    }
+    .t2{
+        width: 40%;
+        float: left;
+        padding-top: .25em;
+        color: darkslateblue;
+        font-size: 2.5em;
+        height: 2.1em;
+    }
+    .t3{
+        width: 44%;
+        float: left;
+        text-align: left;
+        color: #666;
+        padding-top: .45em;
+        font-size: 2em;
+        height: 2.5em;
+    }
+    .t4{
+        width: 14%;
+        float: left}
+    .t5{
+        color: #fbdac8;
+        height: 2em;
+        padding-top:.5em;
+    }
+    .t6{
+        color: #fbdac8;
+        height: 2em;
+        padding-top: .5em;
+    }
+    .t7{
+        padding-top: .5em;
+        color: #888;
+    }
+    .t8{
+        color: #888;
+    }
+
+    #foot{
+        margin: 0 auto;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        height: 4.5em;
+        width: 100%;
+        background-color: #a3bce2;
+        opacity: .8;
+    }
+    #foot i {
+        font-size: 2.5em;
+        color: #eee;
+    }
+    #foot td{
+        width: 20%;
+        text-align: center;
+
+    }
+    #foot3 i{
+        font-size: 3.5em;
+        color: white;
+    }
+    #head{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 1.25em;
+        background: linear-gradient(to left, #ddd6f3 , #faaca8);
+        opacity: .9;
+        padding: .3em .3em 0;
+        font-size: 2em;
+        color: white;
+        letter-spacing: -.05em;
+    }
+    #head a{
+        color: white;
+    }
+    #p3{
+        text-align: center;
+    }
+    #p1,#p2,#p3,#p4,#p5{
+        width: 98%;
+        max-width: 600px;
+        margin: 4em auto 6em;
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "appenders": [
+    {"type":"console"},
+    {
+      "type": "file",
+      "filename": "cc.log",
+      "maxLogSize": 67108864,
+      "backups": 8,
+      "category": "CC"
+    }
+  ]
+}

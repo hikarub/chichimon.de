@@ -1,0 +1,19 @@
+{
+  "name": "cc",
+  "private": "true",
+  "version": "0.1.1",
+  "description": "docker nodejs app using express and restify",
+  "author": "hikaru <hikarubiz247@gmail.com>",
+  "dependencies": {
+    "crypto": "*",
+    "ejs": "^2.5.2",
+    "express": "^4.14.0",
+    "log4js": "*",
+    "mongodb": "*",
+    "passport": "0.3.2",
+    "passport-local": "1.0.0",
+    "redis": "*",
+    "restify": "^4.1.1",
+    "restify-router": "^0.2.1"
+  }
+}

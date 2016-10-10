@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="//cdn.bootcss.com/vue/1.0.26/vue.min.js"></script>
+    <script src="http://cdn.bootcss.com/zepto/1.1.6/zepto.min.js"></script>
+</head>
+<body>
+<div id="p3">
+    <ccinput :inp="input" :da="inputd"></ccinput>
+</div>
+<div id="result"></div>
+
+<script>
+
+    var ccInput = Vue.extend({
+        template:'<div class="form">\
+            <div class="form-item" v-for="i in inp">\
+                <input type="text" id="{{i.i}}" placeholder="{{i.p}}" @keyup.enter="pp(da)"/>\
+            </div>\
+            <div class="button-panel"><button class="button" @click="pp(da)">GO</button> </div>\
+            </div>',
+        props : ['inp','da'],
+        data:function(){
+            return {
+                btn:'btn'
+            }
+        },
+        methods:{
+            crud :function (type,url,data) {
+                    $.ajax({
+                        type: type, //'POST',
+                        url: url, //'/fc',
+                        data: data,
+                        //dataType: dt, //'json',
+                        success: function (data) {
+                            console.log(data);
+                            $('#result').html('SUCCESS POST :' + data)
+                        },
+                        error: function(err){
+                            $('#result').html(err)
+                        }
+                    });
+            },
+            reve: function(input) {
+                var ret = [];
+                for(var i = input.length-1; i >= 0; i--) {
+                ret.push(input[i]);
+                }
+                return ret;
+            },
+            pp: function(d){
+                    //e.preventDefault();
+                    var rd = this.reve(d);
+                    var input0 = {};
+                    var i1 = $('#'+d[0]).val();
+                    var i2 = $('#'+d[1]).val();
+                    if (i1!='' && i2!=''){
+                        input0 = {fc:i1, trans:i2};
+                        console.log(input0);
+                        this.crud(rd[1],rd[0],input0);
+                        $('#'+d[0]+',#'+d[1]).val('');
+                    }else{
+                        $('#result').html('[ERROR] INPUTS NOT COMPLETED!')
+                    }
+            }
+        }
+    });
+
+    var p3 = new Vue({
+        el: '#p3',
+        components: {
+            'ccinput': ccInput
+        },
+        data: {
+            show: 1,
+            s:[],
+            ss:[1,0,0,0],
+            inputd:['id','name','POST','/fc'],
+            input: [
+                {i:'id', p:'ID'},
+                {i:'name', p:'名前'}
+            ]
+        }
+    });
+</script>
+<style>
+    input[type=text]{
+        font-family: Arial, FontAwesome;
+        color: #eee;
+        height: 1.2em;
+        text-align: center;
+        background-color: #fbfbfb;
+        border:1px #ddd solid;
+        border-radius: .2em;
+        padding: .1em;
+    }
+    input[type=text]:focus{
+        text-align: left;
+        color: #777;
+    }
+    .button-panel {
+        margin: 2em 0 0;
+        width: 100%;
+    }
+
+    .button-panel .button {
+        background: #fcd7a1;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        height: 3em;
+        font-size: 1.5em;
+        letter-spacing: 0.05em;
+        text-align: center;
+        transition: background 0.3s ease-in-out;
+        width: 100%;
+    }
+
+    .button:hover {
+        background: #f5b090;
+    }
+    .form-item {
+        margin-bottom: 0.75em;
+        width: 100%;
+    }
+
+    .form-item input {
+        background: #fff;
+        border: none;
+        border-bottom: 2px solid #e9e9e9;
+        color: #666;
+        text-align: left;
+        font-size: 1.5em;
+        height: 2em;
+        transition: border-color 0.3s;
+        width: 100%;
+    }
+
+    .form-item input:focus {
+        border-bottom: 2px solid #c0c0c0;
+        outline: none;
+    }
+
+    .form {
+        background: #FFF;
+        margin: 3em auto;
+        padding: 1em;
+    }
+
+</style>
+
+</body>
+</html>
