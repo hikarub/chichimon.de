@@ -1,0 +1,51 @@
+version: '2'
+services:
+  ng:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      hnet:
+        ipv4_address: 172.20.0.2       
+  h:
+    image: h:0
+    ports:
+      - "1234-1236:1234-1236"
+    volumes:
+      - nodejs:/app
+    links:
+      - redis
+      - mongo
+    networks:
+      hnet:
+        ipv4_address: 172.20.0.3  
+  redis:
+    image: redis:alpine
+    expose:
+      - "6379"
+    command: redis-server --appendonly yes      
+    volumes:
+      - data:/data
+    networks:
+      hnet:
+        ipv4_address: 172.20.0.4    
+  mongo:
+    image: mongo:3.3
+    ports:
+      - "27017:27017"
+    volumes:
+      - data:/data/db
+    networks:
+      hnet:
+        ipv4_address: 172.20.0.5 
+volumes:
+  data:
+  nodejs:
+networks:
+    hnet:
+      driver: bridge
+      ipam:
+        config:
+          - subnet: 172.20.0.0/24    
+

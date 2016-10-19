@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+    <script src="//cdn.bootcss.com/vue/1.0.26/vue.min.js"></script>
+    <script src="http://cdn.bootcss.com/zepto/1.1.6/zepto.min.js"></script>
+</head>
+<body>
+<div id="f1" v-show="show">
+    <div class="box" v-show="sss[0]">
+        <ccinput :inp="input[0]" :da="inputd[0]" :s0="s[0]"></ccinput>
+    </div><div class="box" v-show="sss[1]">
+    <ccinput :inp="input[1]" :da="inputd[1]"></ccinput>
+</div>
+    <div id="result"></div>
+</div>
+
+<script>
+
+    var ccInput = Vue.extend({
+        template:'<div class="form"><a>{{s0}}</a><div  v-for="i in inp">\
+                <input type="text" id="{{i.i}}" placeholder="{{i.p}}" @keyup.enter="pp(da)"/>\
+                </div>\
+                <div><button class="button" @click="pp(da)">GO</button></div></div>',
+        props : ['inp','da','s0'],   ///please sync parent and children
+        data:function(){return {z:'z'}},
+        methods:{
+
+            ///return reverse index of values of an array
+            reve: function(input) {
+                var ret = [];
+                for(var i = input.length-1; i >= 0; i--) {
+                    ret.push(input[i]);
+                }
+                return ret;
+            },
+            ///is every element is true
+            everyTrue: function(element,index,array){return (element >= 1)},
+            ///control data with server by crud()
+            pp: function(d){
+                //e.preventDefault();
+                var rd = this.reve(d);
+                var data = [];
+                var ke = [];
+                var tof = [];   ///true or false of every element
+                var input0 = {};
+                for (var i = 0; i < d.length - 2; i++){
+                    data[i] = $('#'+d[i]).val();
+                    ke[i] = 'a' + i;
+                }
+                for (var j = 0; j < d.length - 2; j++) {
+                    input0[ke[j]] = data[j];
+                    if (data[j] != '' && data[j] != null) {
+                        tof[j] = 1
+                    }
+                    else {
+                        tof[j] = 0
+                    }
+                }
+                if(tof.every(this.everyTrue)) {
+                    f1.crud(rd[1], rd[0], input0);
+                    for (var k= 0; k < d.length - 2; k++){
+                        $('#' + d[k]).val('');
+                    }
+                }else {
+                    $('#result').html('[ERROR] INPUTS NOT COMPLETED!!!');
+                }
+            }
+        }
+    });
+    var f1 = new Vue({
+        el: '#f1',
+        components:{
+            'ccinput': ccInput
+        },
+        data: {
+            show: 1,
+            s:['登 録','MENU2'],
+            sss:[1,0,0,0],
+            ///please sync data of input and inputd
+            input: [
+                [
+                    {i:'ico', p:'User Icon'},
+                    {i:'twitter', p:'Twitter'},
+                    {i:'title', p:'Title'},
+                    {i:'photo', p:'Add a Photo'}
+                ],
+                [   {i:'h', p:'長さ'},
+                    {i:'w', p:'幅さ'}
+                ]
+            ],
+            inputd:[
+                ['ico','twitter','title','photo','POST','/po'],
+                ['h','w','POST','/fc']
+            ]
+        },
+        methods:{
+            ///manual ajax function
+            crud :function (type,url,data) {
+                $.ajax({
+                    type: type, ///'POST',
+                    url: url, ///'/fc',
+                    data: data,
+                    //dataType: dt, ///'json',
+                    success: function (dat) {
+                        console.log(dat);
+                        $('#result').html('SUCCESS POST :' + dat);
+                        return dat;
+                    },
+                    error: function(err){
+                        $('#result').html(err)
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+<style>
+    .form input {
+        background-color: inherit;
+        border: none;
+        border-bottom: 2px solid #e9e9e9;
+        color: #666;
+        text-align: left;
+        font-size: .8em;
+        height: 1em;
+        transition: border-color 0.3s;
+        width: 90%;
+        margin: .5em auto;
+    }
+
+    .form input:focus {
+        border-bottom: 2px solid #c0c0c0;
+        outline: none;
+    }
+
+    .form {
+        width: 80%;
+        margin: auto;
+        padding: 1em;
+        font-size: 1.5em;
+        background: #fff;
+        border: 1px solid #d4ecea;
+        border-radius: .5em;
+    }
+
+    .button {
+        border: 2px #8da3c4 solid;
+        color: #8da3c4;
+        background-color: inherit;
+        cursor: pointer;
+        height: 2em;
+        font-size: 1em;
+        font-weight: bolder;
+        letter-spacing: 0.05em;
+        text-align: center;
+        transition: border 0.4s ease-in-out;
+        width: 90%;
+        border-radius: 1em;
+        margin: .5em auto;
+    }
+
+    .button:hover {
+        border: 2px #faaca8 solid;
+        color: #faaca8;
+    }
+</style>
+</body>
+</html>

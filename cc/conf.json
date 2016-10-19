@@ -1,0 +1,26 @@
+{
+  "appenders": [
+    {"type":"console"},
+    {
+      "type": "file",
+      "filename": "cc.log",
+      "maxLogSize": 67108864,
+      "backups": 8,
+      "category": "CC"
+    },
+    {
+      "type": "file",
+      "filename": "rest.log",
+      "maxLogSize": 67108864,
+      "backups": 8,
+      "category": "REST"
+    },
+        {
+      "type": "file",
+      "filename": "mongo.log",
+      "maxLogSize": 67108864,
+      "backups": 8,
+      "category": "MONGO"
+    }
+  ]
+}
